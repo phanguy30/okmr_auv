@@ -3,11 +3,10 @@ from okmr_msgs.msg import GoalVelocity
 from okmr_msgs.srv import Status, SetInferenceCamera, ChangeModel
 from geometry_msgs.msg import Vector3
 
-# TODO: Replace with actual BoundingBox message when available
-from okmr_msgs.msg import MaskOffset
+from okmr_msgs.msg import BoundingBox
 
 from okmr_automated_planner.base_state_machine import BaseStateMachine
-from okmr_utils.logging import make_green_log
+# from okmr_utils.okmr_utils.logging import make_green_log
 
 
 class FindingGateStateMachine(BaseStateMachine):
@@ -45,6 +44,21 @@ class FindingGateStateMachine(BaseStateMachine):
             "value": 360.0,
             "descriptor": "how much of an angle to cover while searching for gate",
         },
+        {
+            "name": "image_width",
+            "value": 640.0,
+            "descriptor": "width of camera image in pixels",
+        },
+        {
+            "name": "image_height",
+            "value": 480.0,
+            "descriptor": "height of camera image in pixels",
+        },
+        {
+            "name": "centering_threshold_pixels",
+            "value": 50.0,
+            "descriptor": "how many pixels from center the bounding box can be",
+        },
     ]
 
     def __init__(self, *args, **kwargs):
@@ -63,14 +77,20 @@ class FindingGateStateMachine(BaseStateMachine):
         self.max_scan_attempts = self.get_local_parameter("gate_max_scan_attempts")
         self.scan_speed = self.get_local_parameter("scan_speed")
         self.scan_angle = self.get_local_parameter("scan_angle")
+        self.image_width = self.get_local_parameter("image_width")
+        self.image_height = self.get_local_parameter("image_height")
+        self.centering_threshold_pixels = self.get_local_parameter("centering_threshold_pixels")
 
         self.high_confidence_frame_count = 0
         self.scans_completed = 0
         self.cached_gate_bounding_box = None
 
-        # Subscribe to gate detection topic
+        self.image_center_x = self.image_width / 2.0
+        self.image_center_y = self.image_height / 2.0
+
+        # Subscribe to bounding box detection topic
         self.detection_subscription = self.ros_node.create_subscription(
-            MaskOffset, "/mask_offset", self.detection_callback, 10
+            BoundingBox, "/bounding_box", self.detection_callback, 10
         )
         self._subscriptions.append(self.detection_subscription)
 
@@ -85,8 +105,12 @@ class FindingGateStateMachine(BaseStateMachine):
         self.send_service_request(ChangeModel, "/change_model", request, lambda f: None)
 
     def detection_callback(self, msg):
-        if abs(msg.y_offset) > 0.1:
-            self.cached_mask_offset = msg
+        self.cached_gate_bounding_box = msg
+        
+        offset_x = abs(msg.x_coordinate - self.image_center_x)
+        offset_y = abs(msg.y_coordinate - self.image_center_y)
+        
+        if offset_x > self.centering_threshold_pixels or offset_y > self.centering_threshold_pixels:
             if not self.is_following_detection():
                 self.follow_detection()
 
@@ -142,12 +166,18 @@ class FindingGateStateMachine(BaseStateMachine):
             self.queued_method = self.abort
 
     def on_enter_following_detection(self):
-        """Turning towards detected object to verify if its a true positive"""
-        # TODO use self.cached_gate_bounding_box to calculate where to look
-        # ex. if FOV of camera is 90 deg, and center is on the far edges
-        # we will want to do a relative yaw rotation of ~40 degrees
+        """Turning towards detected object to verify if it's a true positive"""
+        if self.cached_gate_bounding_box is None:
+            self.ros_node.get_logger().warn("No bounding box cached, resuming scan")
+            self.resume_scan()
+            return
 
-        calculated_yaw_rotation = 43.0 * self.cached_mask_offset.y_offset  # TEMPORARY
+        offset_x = self.cached_gate_bounding_box.x_coordinate - self.image_center_x
+        normalized_offset = offset_x / self.image_center_x
+        
+        # Scale to rotation angle needed
+        # Assuming 90 degree FOV, normalized_offset of 1.0 = 45 degrees rotation needed
+        calculated_yaw_rotation = 43.0 * normalized_offset
 
         movement_msg = MovementCommand()
         movement_msg.command = MovementCommand.MOVE_RELATIVE
@@ -169,10 +199,16 @@ class FindingGateStateMachine(BaseStateMachine):
             self.queued_method = self.abort
 
     def check_centered_on_gate(self):
-        if self.cached_mask_offset.y_offset < 0.1:
-            self.following_detection_done()
-        else:
-            self.resume_scan()
+        """Check if the gate is now centered in view"""
+        if self.cached_gate_bounding_box:
+            offset_x = abs(self.cached_gate_bounding_box.x_coordinate - self.image_center_x)
+            offset_y = abs(self.cached_gate_bounding_box.y_coordinate - self.image_center_y)
+            
+            if offset_x < self.centering_threshold_pixels and offset_y < self.centering_threshold_pixels:
+                self.following_detection_done()
+                return
+        
+        self.resume_scan()
 
     '''
     def validate_detection_is_true_positive(self):
