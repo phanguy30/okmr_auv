@@ -102,7 +102,7 @@ def seg_to_mask(label_file, img_h=480, img_w=640, normalize=True):
             continue  # skip invalid line
 
         cls = int(parts[0])
-        coords = np.array(list(map(float, parts[1:])), dtype=np.float32)
+        coords = np.array(list(map(float, parts[5:])), dtype=np.float32)
         pts = coords.reshape(-1, 2)
 
         if normalize:
@@ -197,8 +197,8 @@ def main():
         print(f"Test Average Metrics: {test_avg_metrics}")
         
         # Visualize one example
-        example_image_path = test_image_folder / "21.png"
-        example_gt_label_path = test_label_folder / "21.txt"
+        example_image_path = test_image_folder /"22.png"
+        example_gt_label_path = test_label_folder /"22.txt"
         visualize_prediction_and_gt(example_image_path, example_gt_label_path, node)
 
  
