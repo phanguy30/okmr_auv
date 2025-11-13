@@ -20,6 +20,34 @@ if ROOT_DIR not in sys.path:
 from okmr_object_detection import onnx_segmentation_detector as detector
 
 
+def get_precision(pred, gt):
+    try:
+        tp = (pred * gt).sum().item()
+        fp = (pred * (1 - gt)).sum().item()
+       
+
+        precision = tp / (tp + fp + 1e-6)
+       
+
+        return precision
+    except RuntimeError:
+        print(f"[WARN] Skipping sample: shape mismatch pred={tuple(pred.shape)}, gt={tuple(gt.shape)}")
+        return None
+
+def get_recall(pred, gt):
+    try:
+        tp = (pred * gt).sum().item()
+        fn = ((1 - pred) * gt).sum().item()
+       
+
+        recall = tp / (tp + fn + 1e-6)
+       
+
+        return recall
+    except RuntimeError:
+        print(f"[WARN] Skipping sample: shape mismatch pred={tuple(pred.shape)}, gt={tuple(gt.shape)}")
+        return None
+
 
 
 
@@ -59,10 +87,14 @@ def get_model_performance(pred_mask, gt_mask):
     iou = 1 - iou_loss(pred, gt).item()
     dice = 1 - dice_loss(pred, gt).item()
     accuracy = get_accuracy(pred, gt)
+    precision = get_precision(pred, gt)
+    recall = get_recall(pred, gt)
     return {
         "IoU": iou,
         "Dice": dice,
-        "Accuracy": accuracy
+        "Accuracy": accuracy,
+        "Precision": precision,
+        "Recall": recall
     }
 
 def test_model_performance(image_folder,label_folder, node):
@@ -203,7 +235,7 @@ def main():
         # Create node
         node = detector.OnnxSegmentationDetector()
         
-        # Replace with your own paths
+        
         # Train model performance
 
         train_avg_metrics = test_model_performance(train_image_folder, train_label_folder, node)
