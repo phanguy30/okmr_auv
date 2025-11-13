@@ -5,7 +5,12 @@ import cv2
 import numpy as np
 import rclpy
 import torch
-# replace with your own paths in main()
+# replace with your own paths 
+train_image_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/images/train")
+train_label_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/labels/train")
+
+test_image_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/images/val")
+test_label_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/labels/val/val2")
 
 # Ensure the parent directory is in sys.path to import okmr_object_detection
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -19,20 +24,33 @@ from okmr_object_detection import onnx_segmentation_detector as detector
 
 
 def iou_loss(pred, gt, eps=1e-6):
-    
-    intersection = (pred * gt).sum()
-    union = pred.sum() + gt.sum() - intersection
-    return 1 - (intersection + eps) / (union + eps)
+    try:
+        intersection = (pred * gt).sum()
+        union = pred.sum() + gt.sum() - intersection
+        return 1 - (intersection + eps) / (union + eps)
+    except RuntimeError:
+        print(f"[WARN] Skipping sample: shape mismatch pred={tuple(pred.shape)}, gt={tuple(gt.shape)}")
+        return None
+
 
 def dice_loss(pred, gt, eps=1e-6):
-    intersection = (pred * gt).sum()
-    return 1 - (2 * intersection + eps) / (pred.sum() + gt.sum() + eps)
+    try:
+        intersection = (pred * gt).sum()
+        return 1 - (2 * intersection + eps) / (pred.sum() + gt.sum() + eps)
+    except RuntimeError:
+        print(f"[WARN] Skipping sample: shape mismatch pred={tuple(pred.shape)}, gt={tuple(gt.shape)}")
+        return None
+
 
 def get_accuracy(pred, gt):
-
-    correct = (pred == gt).sum().item()
-    total = gt.numel()
-    return correct / total if total > 0 else 0.0
+    try:
+        correct = (pred == gt).sum().item()
+        total = gt.numel()
+        return correct / total if total > 0 else None
+    except RuntimeError:
+        print(f"[WARN] Skipping sample: shape mismatch pred={tuple(pred.shape)}, gt={tuple(gt.shape)}")
+        return None
+    
 
 def get_model_performance(pred_mask, gt_mask):
     """Compute IoU, Dice, and Accuracy between predicted and ground truth masks."""
@@ -59,22 +77,26 @@ def test_model_performance(image_folder,label_folder, node):
     for image_path,test_label_file in zip(sorted(image_folder.glob("*")), sorted(label_folder.glob("*"))):
         rgb = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
         assert rgb is not None, f"Failed to read image {image_path}"
+        
+        img_h, img_w = rgb.shape[:2]
 
         pred_mask = test_inference(rgb, node) #run inference to get mask
-        gt_mask, _ = seg_to_mask(test_label_file) #get ground truth mask
+        gt_mask, _ = seg_to_mask(test_label_file, img_h, img_w) #get ground truth mask
 
         metrics = get_model_performance(pred_mask, gt_mask)
         performance_metrics.append(metrics)
 
     avg_metrics = {}
-    num_samples = len(performance_metrics)
 
-    # Loop through each metric key and compute average
     for key in performance_metrics[0]:
         total = 0
+        count = 0
         for m in performance_metrics:
-            total += m[key]
-        avg_metrics[key] = total / num_samples
+            if m[key] is not None:
+                total += m[key]
+                count += 1
+        
+        avg_metrics[key] = total / count if count > 0 else None
 
     return avg_metrics
 
@@ -147,9 +169,11 @@ def visualize_prediction_and_gt(image_path, gt_label_path, node):
     """Visualize prediction and ground truth masks on the image."""
     rgb = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
     assert rgb is not None, f"Failed to read image {image_path}"
+    
+    img_h, img_w = rgb.shape[:2]
 
     pred_mask = test_inference(rgb, node) # run inference to get mask
-    gt_mask, _ = seg_to_mask(gt_label_path) # get ground truth mask
+    gt_mask, _ = seg_to_mask(gt_label_path, img_h, img_w) # get ground truth mask
 
     # Visualize predicted mask
     visualize_mask_on_image(rgb, pred_mask, window_name="Predicted Mask")
@@ -181,17 +205,16 @@ def main():
         
         # Replace with your own paths
         # Train model performance
-        
-        train_image_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/test_img")
-        train_label_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/test_labels")
+
         train_avg_metrics = test_model_performance(train_image_folder, train_label_folder, node)
 
         print(f"Train Average Metrics: {train_avg_metrics}")
         
+
+        
         # Test model performance
         
-        test_image_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/images/val")
-        test_label_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/labels/val/val2")
+
         test_avg_metrics = test_model_performance(test_image_folder, test_label_folder, node)
 
         print(f"Test Average Metrics: {test_avg_metrics}")
@@ -208,4 +231,11 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
+
+# rclpy.init(args=None)
+
+# node = detector.OnnxSegmentationDetector()
+# example_image_path = train_image_folder /"gate52_1.png"
+# example_gt_label_path = train_label_folder /"gate52_1.txt"
+# visualize_prediction_and_gt(example_image_path, example_gt_label_path, node)
