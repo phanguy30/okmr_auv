@@ -17,8 +17,26 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Cache stonefish build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ros2_ws/build/stonefish_vendor
+            ros2_ws/install/stonefish_vendor
+          key: stonefish_vendor-${{ hashFiles('third_party/stonefish/**') }}
+          restore-keys: |
+            stonefish_vendor-
+
       - name: Run in devcontainer
         uses: devcontainers/ci@v0.3
         with:
           runCmd: |
-            colcon build
+            # If cache hit, skip stonefish_vendor rebuild
+            if [ ! -f install/stonefish_vendor/lib/libstonefish.so ]; then
+              colcon build --packages-select stonefish_vendor --merge-install
+            fi
+
+            export CMAKE_PREFIX_PATH=$PWD/install:$CMAKE_PREFIX_PATH
+            export LD_LIBRARY_PATH=$PWD/install/lib:$LD_LIBRARY_PATH
+
+            colcon build --merge-install

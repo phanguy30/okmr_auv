@@ -1,4 +1,5 @@
 FROM docker.io/ros:jazzy
+
 ARG ROS_DISTRO
 ENV ROS_DISTRO=$ROS_DISTRO
 ARG USERNAME=okmr
@@ -11,22 +12,30 @@ RUN if id -u $USER_UID ; then userdel `id -un $USER_UID` ; fi
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    #
-    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && apt-get update && apt-get install -y sudo \
+    && echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
-RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y python3-pip
-# project dependencies
-RUN apt-get install -y libpcl-dev libglm-dev libsdl2-dev python3-scipy python3-transitions
-ENV SHELL /bin/bash
 
-# ********************************************************
-# * Anything else you want to do like clean up goes here *
-# ********************************************************
+# Install all system packages
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    build-essential \
+    cmake \
+    git \
+    libpcl-dev \
+    libglm-dev \
+    libsdl2-dev \
+    python3-scipy \
+    python3-transitions \
+    python3-rosdep \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# [Optional] Set the default user. Omit if you want to keep the default as root.
+# Initialize rosdep
+RUN sudo rosdep init || true
+RUN sudo rosdep fix-permissions
+
 USER $USERNAME
-CMD ["/bin/bash"]
+WORKDIR /home/$USERNAME
+ENV SHELL=/bin/bash
+
+RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /home/$USERNAME/.bashrc
