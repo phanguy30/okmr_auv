@@ -32,14 +32,14 @@ if(NOT TARGET Stonefish::Stonefish)
   add_library(Stonefish::Stonefish SHARED IMPORTED)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
-    IMPORTED_LOCATION \"\${CMAKE_CURRENT_LIST_DIR}/../../../lib/libStonefish.so\"
-    INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../include\"
+    IMPORTED_LOCATION \"\${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
+    INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_INSTALL_PREFIX}/include\"
   )
 endif()
 ")
 
-# Install config
+# Overwrite upstream config for CI
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
-        DESTINATION share/Stonefish/cmake)
+        DESTINATION lib/cmake/Stonefish)
 
 ament_package()
