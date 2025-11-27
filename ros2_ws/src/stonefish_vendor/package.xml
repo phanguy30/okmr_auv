@@ -3,21 +3,18 @@
 <package format="3">
   <name>stonefish_vendor</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Wrapper for the Stonefish marine simulation library.</description>
   <maintainer email="erykhalicki0@gmail.com">eryk</maintainer>
   <license>sigma license</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   
-  <depend>okmr_utils</depend>
-  <depend>okmr_msgs</depend>
+  <build_depend>libopengl-dev</build_depend>
+  <build_depend>libsdl2-dev</build_depend>
+  <build_depend>libfreetype6-dev</build_depend>
 
-  <test_depend>ament_cmake_ros</test_depend>
-    <test_depend>launch</test_depend>
-    <test_depend>launch_ros</test_depend>
-    <test_depend>launch_testing</test_depend>
-    <test_depend>launch_testing_ament_cmake</test_depend>
-    <test_depend>rclpy</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
