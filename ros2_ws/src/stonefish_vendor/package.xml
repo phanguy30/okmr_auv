@@ -9,9 +9,9 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   
-  <build_depend>libopengl-dev</build_depend>
-  <build_depend>libsdl2-dev</build_depend>
-  <build_depend>libfreetype6-dev</build_depend>
+  <build_depend>opengl</build_depend>
+  <build_depend>sdl2</build_depend>
+  <build_depend>freetype</build_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
