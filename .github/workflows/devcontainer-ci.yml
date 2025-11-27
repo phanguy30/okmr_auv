@@ -17,15 +17,17 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Get Submodule Hash
+        id: submodule_hash
+        run: echo "hash=$(git submodule status | awk '{print $1}')" >> $GITHUB_OUTPUT
+
       - name: Cache stonefish build
         uses: actions/cache@v3
         with:
           path: |
             ros2_ws/build/stonefish_vendor
             ros2_ws/install/stonefish_vendor
-          key: stonefish_vendor-${{ hashFiles('third_party/stonefish/**', 'ros2_ws/src/stonefish_vendor/**') }}
-          restore-keys: |
-            stonefish_vendor-
+          key: stonefish_vendor-${{ steps.submodule_hash.outputs.hash }}
 
       - name: Run in devcontainer
         uses: devcontainers/ci@v0.3
@@ -33,11 +35,6 @@ jobs:
           runCmd: |
             source /opt/ros/jazzy/setup.bash
 
-            # If cache hit, skip stonefish_vendor rebuild
-            if [ ! -f install/stonefish_vendor/lib/libStonefish.so ]; then
-               colcon build --packages-up-to stonefish_vendor
-            fi
+            colcon build --symlink-install
 
             source install/setup.bash
-
-            colcon build
