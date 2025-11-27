@@ -14,23 +14,24 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Hash stonefish source
-        id: vendor_hash
-        run: |
-          echo "hash=$(git -C third_party/stonefish rev-parse HEAD)" >> $GITHUB_OUTPUT
+      - name: Ignore raw Stonefish source
+        run: touch third_party/stonefish/COLCON_IGNORE
+
+      - name: Hash Stonefish source
+        id: stonefish_hash
+        run: echo "hash=$(git -C third_party/stonefish rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Hash devcontainer environment
         id: env_hash
-        run: |
-          echo "hash=${{ hashFiles('.devcontainer/**') }}" >> $GITHUB_OUTPUT
+        run: echo "hash=${{ hashFiles('.devcontainer/**') }}" >> $GITHUB_OUTPUT
 
-      - name: Cache vendor build
+      - name: Cache Stonefish build
         uses: actions/cache@v3
         with:
           path: |
             ros2_ws/build/stonefish_vendor
             ros2_ws/install/stonefish_vendor
-          key: stonefish_vendor-${{ steps.env_hash.outputs.hash }}-${{ steps.vendor_hash.outputs.hash }}
+          key: stonefish-vendor-${{ steps.env_hash.outputs.hash }}-${{ steps.stonefish_hash.outputs.hash }}
 
       - name: Build in devcontainer
         uses: devcontainers/ci@v0.3
@@ -38,7 +39,7 @@ jobs:
           runCmd: |
             source /opt/ros/jazzy/setup.bash
 
-            colcon build --packages-up-to stonefish_vendor --symlink-install
+            colcon build --packages-select stonefish_vendor --symlink-install
 
             source install/setup.bash
 
