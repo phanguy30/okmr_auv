@@ -2,39 +2,41 @@ name: Devcontainer CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Get Submodule Hash
-        id: submodule_hash
-        run: echo "hash=$(git submodule status | sha1sum | awk '{print $1}')" >> $GITHUB_OUTPUT
+      - name: Hash stonefish source
+        id: vendor_hash
+        run: |
+          echo "hash=$(git -C third_party/stonefish rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Cache stonefish build
+      - name: Hash devcontainer environment
+        id: env_hash
+        run: |
+          echo "hash=${{ hashFiles('.devcontainer/**') }}" >> $GITHUB_OUTPUT
+
+      - name: Cache vendor build
         uses: actions/cache@v3
         with:
           path: |
             ros2_ws/build/stonefish_vendor
             ros2_ws/install/stonefish_vendor
-          key: stonefish_vendor-${{ steps.submodule_hash.outputs.hash }}
+          key: stonefish_vendor-${{ steps.env_hash.outputs.hash }}-${{ steps.vendor_hash.outputs.hash }}
+          restore-keys: |
+            stonefish_vendor-${{ steps.vendor_hash.outputs.hash }}
 
-      - name: Run in devcontainer
+      - name: Build in devcontainer
         uses: devcontainers/ci@v0.3
         with:
           runCmd: |
             source /opt/ros/jazzy/setup.bash
-
             colcon build --symlink-install
-
-            source install/setup.bash

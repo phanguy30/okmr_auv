@@ -41,15 +41,13 @@ if(NOT TARGET Stonefish::Stonefish)
   add_library(Stonefish::Stonefish SHARED IMPORTED)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
-    IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
-    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish\"
+    IMPORTED_LOCATION \"\${CMAKE_CURRENT_LIST_DIR}/../../../lib/libStonefish.so\"
+    INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../include/Stonefish\"
   )
 endif()
 ")
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
         DESTINATION lib/cmake/Stonefish)
-
-ament_export_dependencies(OpenGL SDL2 Freetype OpenMP)
 
 ament_package()
