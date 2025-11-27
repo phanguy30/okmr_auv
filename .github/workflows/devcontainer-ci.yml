@@ -22,8 +22,8 @@ jobs:
         with:
           path: |
             ros2_ws/build/stonefish_vendor
-            ros2_ws/install/stonefish_vendor 
-          key: stonefish_vendor-${{ hashFiles('third_party/stonefish/**') }}
+            ros2_ws/install/stonefish_vendor
+          key: stonefish_vendor-${{ hashFiles('third_party/stonefish/**', 'ros2_ws/src/stonefish_vendor/**') }}
           restore-keys: |
             stonefish_vendor-
 
