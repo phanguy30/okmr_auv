@@ -18,8 +18,28 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/
         DESTINATION lib
         FILES_MATCHING PATTERN "*.so*")
 
-# Install config 
-install(FILES ${STONEFISH_ROOT_DIR}/StonefishConfig.cmake
+# We write this file to explicitly link the installed library to the installed headers
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
+"
+include(CMakeFindDependencyMacro)
+
+find_dependency(OpenGL)
+find_dependency(SDL2)
+find_dependency(Freetype)
+find_dependency(OpenMP)
+
+if(NOT TARGET Stonefish::Stonefish)
+  add_library(Stonefish::Stonefish SHARED IMPORTED)
+  
+  set_target_properties(Stonefish::Stonefish PROPERTIES
+    IMPORTED_LOCATION \"\${CMAKE_CURRENT_LIST_DIR}/../../../lib/libstonefish.so\"
+    INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../include\"
+  )
+endif()
+")
+
+# Install config
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
         DESTINATION share/Stonefish/cmake)
 
 ament_package()
