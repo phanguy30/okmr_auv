@@ -31,12 +31,15 @@ jobs:
             ros2_ws/build/stonefish_vendor
             ros2_ws/install/stonefish_vendor
           key: stonefish_vendor-${{ steps.env_hash.outputs.hash }}-${{ steps.vendor_hash.outputs.hash }}
-          restore-keys: |
-            stonefish_vendor-${{ steps.vendor_hash.outputs.hash }}
 
       - name: Build in devcontainer
         uses: devcontainers/ci@v0.3
         with:
           runCmd: |
             source /opt/ros/jazzy/setup.bash
-            colcon build --symlink-install
+
+            colcon build --packages-up-to stonefish_vendor --symlink-install
+
+            source install/setup.bash
+
+            colcon build --packages-skip stonefish_vendor --symlink-install
