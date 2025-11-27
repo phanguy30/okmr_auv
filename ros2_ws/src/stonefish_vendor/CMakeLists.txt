@@ -17,6 +17,9 @@ add_subdirectory(${STONEFISH_ROOT_DIR}
 install(DIRECTORY ${STONEFISH_ROOT_DIR}/Library/include/
         DESTINATION include/Stonefish)
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/version.h
+        DESTINATION include/Stonefish)
+
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/
         DESTINATION lib
         FILES_MATCHING PATTERN "*.so*")
@@ -36,7 +39,6 @@ if(NOT TARGET Stonefish::Stonefish)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
     IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
-    
     INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish;\${BULLET_INCLUDE_DIRS}\"
   )
 endif()
