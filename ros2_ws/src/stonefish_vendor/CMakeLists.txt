@@ -19,7 +19,6 @@ install(DIRECTORY ${STONEFISH_ROOT_DIR}/Library/include/
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/version.h
         DESTINATION include/Stonefish)
 
-
 install(DIRECTORY ${STONEFISH_ROOT_DIR}/3rdparty/
         DESTINATION include/Stonefish
         FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
@@ -27,7 +26,7 @@ install(DIRECTORY ${STONEFISH_ROOT_DIR}/3rdparty/
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/
         DESTINATION lib
-        FILES_MATCHING PATTERN "*.so*")
+        FILES_MATCHING PATTERN "libStonefish.so*")
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
 "
@@ -43,7 +42,7 @@ if(NOT TARGET Stonefish::Stonefish)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
     IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
-    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish\"
+    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish;${CMAKE_INSTALL_PREFIX}/include/Stonefish/glad\"
   )
 endif()
 ")
