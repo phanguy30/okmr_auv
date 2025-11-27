@@ -11,7 +11,7 @@ add_subdirectory(${STONEFISH_ROOT_DIR}
 
 # Install headers
 install(DIRECTORY ${STONEFISH_ROOT_DIR}/Library/include/
-        DESTINATION include)
+        DESTINATION include/Stonefish)
 
 # Install libraries
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/
