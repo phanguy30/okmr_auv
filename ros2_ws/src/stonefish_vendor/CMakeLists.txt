@@ -42,7 +42,7 @@ if(NOT TARGET Stonefish::Stonefish)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
     IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
-    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish;${CMAKE_INSTALL_PREFIX}/include/Stonefish/glad\"
+    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish\"
   )
 endif()
 ")
