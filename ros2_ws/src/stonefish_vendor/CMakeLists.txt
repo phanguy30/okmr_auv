@@ -18,4 +18,8 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/
         DESTINATION lib
         FILES_MATCHING PATTERN "*.so*")
 
+# Install config 
+install(FILES ${STONEFISH_ROOT_DIR}/StonefishConfig.cmake
+        DESTINATION share/Stonefish/cmake)
+
 ament_package()
