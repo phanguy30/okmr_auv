@@ -32,7 +32,7 @@ if(NOT TARGET Stonefish::Stonefish)
   add_library(Stonefish::Stonefish SHARED IMPORTED)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
-    IMPORTED_LOCATION \"\${CMAKE_CURRENT_LIST_DIR}/../../../lib/libstonefish.so\"
+    IMPORTED_LOCATION \"\${CMAKE_CURRENT_LIST_DIR}/../../../lib/libStonefish.so\"
     INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../include\"
   )
 endif()

@@ -34,7 +34,7 @@ jobs:
             source /opt/ros/jazzy/setup.bash
 
             # If cache hit, skip stonefish_vendor rebuild
-            if [ ! -f install/stonefish_vendor/lib/libstonefish.so ]; then
+            if [ ! -f install/stonefish_vendor/lib/libStonefish.so ]; then
                colcon build --packages-up-to stonefish_vendor
             fi
 
