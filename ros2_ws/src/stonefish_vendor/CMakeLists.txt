@@ -3,22 +3,38 @@ project(stonefish_vendor)
 
 find_package(ament_cmake REQUIRED)
 
+find_package(OpenGL REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(Freetype REQUIRED)
+find_package(OpenMP REQUIRED)
+find_package(Bullet REQUIRED)
+
 set(STONEFISH_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/stonefish)
 
-# Build Stonefish 
 add_subdirectory(${STONEFISH_ROOT_DIR}
                  ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build)
 
-# Install headers
+target_include_directories(Stonefish PUBLIC
+  $<BUILD_INTERFACE:${STONEFISH_ROOT_DIR}/Library/include>
+  $<INSTALL_INTERFACE:include> 
+  $<INSTALL_INTERFACE:include/Stonefish> 
+)
+
 install(DIRECTORY ${STONEFISH_ROOT_DIR}/Library/include/
         DESTINATION include/Stonefish)
 
-# Install libraries
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/
-        DESTINATION lib
-        FILES_MATCHING PATTERN "*.so*")
+install(TARGETS Stonefish
+        EXPORT StonefishTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include)
 
-# We write this file to explicitly link the installed library to the installed headers
+install(EXPORT StonefishTargets
+        FILE StonefishTargets.cmake
+        NAMESPACE Stonefish::
+        DESTINATION share/Stonefish/cmake)
+
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
 "
 include(CMakeFindDependencyMacro)
@@ -27,19 +43,14 @@ find_dependency(OpenGL)
 find_dependency(SDL2)
 find_dependency(Freetype)
 find_dependency(OpenMP)
+find_dependency(Bullet)
 
-if(NOT TARGET Stonefish::Stonefish)
-  add_library(Stonefish::Stonefish SHARED IMPORTED)
-  
-  set_target_properties(Stonefish::Stonefish PROPERTIES
-    IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
-    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish\"
-  )
-endif()
+include(\"\${CMAKE_CURRENT_LIST_DIR}/StonefishTargets.cmake\")
 ")
 
-# Overwrite upstream config
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
-        DESTINATION lib/cmake/Stonefish)
+        DESTINATION share/Stonefish/cmake)
+
+ament_export_dependencies(OpenGL SDL2 Freetype OpenMP Bullet)
 
 ament_package()
