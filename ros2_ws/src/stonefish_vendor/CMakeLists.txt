@@ -14,26 +14,12 @@ set(STONEFISH_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/stonefis
 add_subdirectory(${STONEFISH_ROOT_DIR}
                  ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build)
 
-target_include_directories(Stonefish PUBLIC
-  $<BUILD_INTERFACE:${STONEFISH_ROOT_DIR}/Library/include>
-  $<INSTALL_INTERFACE:include> 
-  $<INSTALL_INTERFACE:include/Stonefish> 
-)
-
 install(DIRECTORY ${STONEFISH_ROOT_DIR}/Library/include/
         DESTINATION include/Stonefish)
 
-install(TARGETS Stonefish
-        EXPORT StonefishTargets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include)
-
-install(EXPORT StonefishTargets
-        FILE StonefishTargets.cmake
-        NAMESPACE Stonefish::
-        DESTINATION share/Stonefish/cmake)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/stonefish_build/
+        DESTINATION lib
+        FILES_MATCHING PATTERN "*.so*")
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
 "
@@ -45,11 +31,19 @@ find_dependency(Freetype)
 find_dependency(OpenMP)
 find_dependency(Bullet)
 
-include(\"\${CMAKE_CURRENT_LIST_DIR}/StonefishTargets.cmake\")
+if(NOT TARGET Stonefish::Stonefish)
+  add_library(Stonefish::Stonefish SHARED IMPORTED)
+  
+  set_target_properties(Stonefish::Stonefish PROPERTIES
+    IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
+    
+    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish;\${BULLET_INCLUDE_DIRS}\"
+  )
+endif()
 ")
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
-        DESTINATION share/Stonefish/cmake)
+        DESTINATION lib/cmake/Stonefish)
 
 ament_export_dependencies(OpenGL SDL2 Freetype OpenMP Bullet)
 
