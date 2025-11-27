@@ -32,8 +32,8 @@ if(NOT TARGET Stonefish::Stonefish)
   add_library(Stonefish::Stonefish SHARED IMPORTED)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
-    IMPORTED_LOCATION \"\${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
-    INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_INSTALL_PREFIX}/include\"
+    IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
+    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include\"
   )
 endif()
 ")
