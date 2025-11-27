@@ -33,12 +33,12 @@ if(NOT TARGET Stonefish::Stonefish)
   
   set_target_properties(Stonefish::Stonefish PROPERTIES
     IMPORTED_LOCATION \"${CMAKE_INSTALL_PREFIX}/lib/libStonefish.so\"
-    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include\"
+    INTERFACE_INCLUDE_DIRECTORIES \"${CMAKE_INSTALL_PREFIX}/include;${CMAKE_INSTALL_PREFIX}/include/Stonefish\"
   )
 endif()
 ")
 
-# Overwrite upstream config for CI
+# Overwrite upstream config
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/StonefishConfig.cmake
         DESTINATION lib/cmake/Stonefish)
 
