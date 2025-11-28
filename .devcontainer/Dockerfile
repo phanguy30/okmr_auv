@@ -17,7 +17,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
     && rm -rf /var/lib/apt/lists/*
 
-# Install System Packages
+# Install system packages
 RUN apt-get update && apt-get install -y \
     python3-pip \
     build-essential \
