@@ -123,23 +123,23 @@ class ESP32BridgeNode(Node):
         self.get_logger().info(f"Motor remapping: {self.motor_index_remapping}")
 
         self.motor_throttle_sub = self.create_subscription(
-            MotorThrottle, "motor_throttle", self.motor_callback, 10
+            MotorThrottle, "/motor_throttle", self.motor_callback, 10
         )
 
-        self.ping_sub = self.create_subscription(String, "ping", self.ping_callback, 10)
+        self.ping_sub = self.create_subscription(String, "/ping", self.ping_callback, 10)
 
         self.battery_voltage_pub = self.create_publisher(
-            BatteryVoltage, "battery_voltage", 10
+            BatteryVoltage, "/battery_voltage", 10
         )
 
         self.mission_command_pub = self.create_publisher(
-            MissionCommand, "mission_command", 10
+            MissionCommand, "/mission_command", 10
         )
 
-        self.leak_sensor_pub = self.create_publisher(SensorReading, "leak_sensor", 10)
+        self.leak_sensor_pub = self.create_publisher(SensorReading, "/leak_sensor", 10)
 
         self.environment_data_pub = self.create_publisher(
-            EnvironmentData, "environment_data", 10
+            EnvironmentData, "/environment_data", 10
         )
 
         try:

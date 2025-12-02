@@ -170,7 +170,7 @@ class DeadReckoningNode : public rclcpp::Node {
 
         // Services
         get_pose_twist_accel_service = this->create_service<okmr_msgs::srv::GetPoseTwistAccel> (
-            "get_pose_twist_accel", std::bind (&DeadReckoningNode::get_pose_twist_accel_callback,
+            "/get_pose_twist_accel", std::bind (&DeadReckoningNode::get_pose_twist_accel_callback,
                                                this, std::placeholders::_1, std::placeholders::_2));
 
         set_dead_reckoning_service = this->create_service<okmr_msgs::srv::SetDeadReckoningEnabled> (

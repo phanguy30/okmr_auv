@@ -81,14 +81,14 @@ class OnnxSegmentationDetector(ObjectDetectorNode):
 
         # Create services
         self.change_model_srv = self.create_service(
-            ChangeModel, 
-            'change_model', 
+            ChangeModel,
+            '/change_model',
             self.change_model_callback
         )
-        
+
         self.set_inference_camera_srv = self.create_service(
             SetInferenceCamera,
-            'set_inference_camera',
+            '/set_inference_camera',
             self.set_inference_camera_callback
         )
         

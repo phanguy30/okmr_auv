@@ -25,7 +25,7 @@ def _call_get_pose_twist_accel_service():
     node = NavigatorActionServer.get_instance()
     
     try:
-        client = node.create_client(GetPoseTwistAccel, 'get_pose_twist_accel')
+        client = node.create_client(GetPoseTwistAccel, '/get_pose_twist_accel')
         
         # Wait for service to be available
         if not client.wait_for_service(timeout_sec=2.0):

@@ -13,7 +13,7 @@ class AutomatedPlannerNode(Node):
     PARAMETERS = [
         {'name': 'state_timeout_check_period', 'value': 0.5, 'descriptor': 'How often to check if the current state should timeout'},
         {'name': 'config_base_path', 'value': '', 'descriptor': 'Base path for all configuration files, usually share directory/state_machine_configs/dev'},
-        {'name': 'root_config', 'value': 'master.yaml', 'descriptor': 'Master configuration file name (relative to config_base_path)'}
+        {'name': 'root_config', 'value': 'root.yaml', 'descriptor': 'Root configuration file name (relative to config_base_path)'}
     ]
 
     def __init__(self):

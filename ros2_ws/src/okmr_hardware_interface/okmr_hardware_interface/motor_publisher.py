@@ -9,7 +9,7 @@ class MotorTestPublisher(Node):
         super().__init__('motor_test_publisher')
 
         # Use topic name expected by subscriber (change if I'm using the wrong name)
-        self.publisher_ = self.create_publisher(MotorThrottle, 'motor_throttle', 10)
+        self.publisher_ = self.create_publisher(MotorThrottle, '/motor_throttle', 10)
 
         # Timer to send a message every 0.5 seconds
         self.timer = self.create_timer(0.5, self.timer_callback)

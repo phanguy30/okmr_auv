@@ -316,7 +316,7 @@ class RootStateMachine(BaseStateMachine):
         request = GetPoseTwistAccel.Request()
         self.send_service_request(
             GetPoseTwistAccel,
-            "get_pose_twist_accel",
+            "/get_pose_twist_accel",
             request,
             self._pose_callback,
         )
