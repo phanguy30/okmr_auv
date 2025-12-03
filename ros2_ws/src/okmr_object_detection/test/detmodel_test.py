@@ -1,3 +1,52 @@
+
+
+# Detection Model Test Script
+# -----------------------------------------------------------------------------
+# This script takes in a model, image and label folder and then returns a score 
+#
+# Main entry point:
+#   main()
+
+# What main() does:
+#   1. Initializes the chosen model/node.
+#   2. Calls test_model_performance(image_folder, label_folder, node), which:
+#       - Runs inference on each image which output a mask
+#       - Converts YOLO-seg label files to masks using seg_to_mask().
+#       - Gives warning if there is no matching labels or images
+#       - Compare predicted mask and ground truth mask, get performance metrics via get_model_performance().
+#   3. Prints average performance statistics/loss
+#   4. Visualizes one test example (can choose your own file) by overlaying both: the predicted mask and the ground-truth mask
+#      on top of the original image for side-by-side comparison.
+#
+# Label format:
+#   - Labels are in YOLO segmentation (.txt) format.
+#   - seg_to_mask(label_file, img_h, img_w) converts each .txt file into a
+#     bit mask (H x W), which is then compared with the model output.
+#
+# How to run:
+#   - Set the paths to your train/test folders below, e.g.:
+#       train_image_folder = Path("/path/to/train/images")
+#       train_label_folder = Path("/path/to/train/labels")
+#       test_image_folder  = Path("/path/to/test/images")
+#       test_label_folder  = Path("/path/to/test/labels")
+#   - Call:
+#       main()
+#   - Run on train and test folders separately to get train/test statistics
+#
+# Helper functions:
+#   - visualize_mask_on_image(image, mask):
+#       Overlays a mask on an image for quick visual debugging.
+#
+#   - visualize_prediction_and_gt(image_path, gt_label_path, node):
+#       1. Reads the image and corresponding YOLO-seg label.
+#       2. Runs inference with the given node to get the predicted mask.
+#       3. Converts the GT label to a mask via seg_to_mask().
+#       4. Overlays and displays both prediction and ground-truth masks.
+#
+# -----------------------------------------------------------------------------
+
+
+
 import os
 import sys
 from pathlib import Path
@@ -5,19 +54,40 @@ import cv2
 import numpy as np
 import rclpy
 import torch
-# replace with your own paths 
-train_image_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/images/train")
-train_label_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/labels/train")
+from pathlib import Path
 
-test_image_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/images/val")
-test_label_folder = Path("/Users/peter/Library/CloudStorage/OneDrive-Personal/Documents/MDS_UBC/OKMarine/DepthT-main/datasets/gateseg/labels/val/val2")
 
-# Ensure the parent directory is in sys.path to import okmr_object_detection
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
 from okmr_object_detection import onnx_segmentation_detector as detector
+
+
+# directory of THIS script
+p = Path(__file__).resolve().parent
+
+
+# Walk upward until we find "okmr_auv", go one folder outside of that
+while p.name != "okmr_auv" and p != p.parent:
+    p = p.parent
+
+p = p.parent
+print(p)
+
+
+
+
+# Replace these with what ever folder you have for the images and labels
+# Training folders
+train_image_folder = p / "DepthT-main"/ "datasets" / "gateseg" / "images" / "train"
+train_label_folder = p / "DepthT-main" / "datasets" / "gateseg" / "labels" / "train"
+
+# Testing / validation folders
+test_image_folder  = p / "DepthT-main" / "datasets" / "gateseg" / "images" / "val"
+test_label_folder  = p / "DepthT-main" / "datasets" / "gateseg" / "labels" / "val"
+
+
 
 
 def get_precision(pred, gt):
@@ -100,20 +170,45 @@ def get_model_performance(pred_mask, gt_mask):
 def test_model_performance(image_folder,label_folder, node):
     """
     Get average model performance on all images in a folder.
-    Args: Provide folder paths containing images and corresponding labels.
+    Args: Provide folder paths containing images and corresponding labels. 
+    The images and labels names have to be the same
     Returns: Average performance metrics across all images in the folder.
     """
+    
+    # Making sure that the image and labels files names are the same 
+    # Convert to dicts with keys as file name (no extension) : file path
+    image_files = {p.stem: p for p in image_folder.glob("*")}
+    label_files = {p.stem: p for p in label_folder.glob("*")}
+
+    # Find the intersection (files that exist in BOTH)
+    common_stems = sorted(image_files.keys() & label_files.keys())
+    
+    # Not matching 
+    if not common_stems:
+        raise ValueError("No matching image/label pairs found.")
+
+    #Get skipped images/ labels
+    skipped_images = sorted(image_files.keys() - label_files.keys())
+    skipped_labels = sorted(label_files.keys() - image_files.keys())
+
+    if skipped_images:
+        print("Skipping images without labels:", skipped_images)
+    if skipped_labels:
+        print("Skipping labels without images:", skipped_labels)
+        
     performance_metrics = []
     
     # Loop through all image files
-    for image_path,test_label_file in zip(sorted(image_folder.glob("*")), sorted(label_folder.glob("*"))):
+    for stem in common_stems:
+        image_path  = image_files[stem]
+        label_path = label_files[stem]
         rgb = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
         assert rgb is not None, f"Failed to read image {image_path}"
         
         img_h, img_w = rgb.shape[:2]
 
         pred_mask = test_inference(rgb, node) #run inference to get mask
-        gt_mask, _ = seg_to_mask(test_label_file, img_h, img_w) #get ground truth mask
+        gt_mask, _ = seg_to_mask(label_path, img_h, img_w) #get ground truth mask
 
         metrics = get_model_performance(pred_mask, gt_mask)
         performance_metrics.append(metrics)
@@ -134,7 +229,7 @@ def test_model_performance(image_folder,label_folder, node):
 
 def seg_to_mask(label_file, img_h=480, img_w=640, normalize=True):
     """
-    Convert YOLO-seg .txt label file to a binary 0/1 mask (H x W).
+    Convert YOLOv8 format label file to a multi class mask (H x W).
 
     label_file: path to YOLO segmentation label .txt file
     img_h, img_w: output mask size
