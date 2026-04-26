@@ -49,8 +49,7 @@ TODO
 
 
 # Run Gazebo with the okmr AUV
-Terminal 1:
-
+## Terminal 1:
 conda activate ros_env
 source "$CONDA_PREFIX/setup.sh"
 source /ros2_ws/install/setup.sh
@@ -58,24 +57,25 @@ export GZ_SIM_RESOURCE_PATH=$PWD/simulation/gazebo/models
 export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:$PWD/simulation/gazebo/worlds
 gz sim -s water.world
 
-Terminal 2:
-gz sim -g
-
-Terminal 3:
-conda activate ros_env
-source "$CONDA_PREFIX/setup.sh"
-source /ros2_ws/install/setup.sh
-ros2 run ros_gz_bridge parameter_bridge \
-"/cascade/motor_throttle/fli@std_msgs/msg/Float64]gz.msgs.Double" \
-"/cascade/motor_throttle/fri@std_msgs/msg/Float64]gz.msgs.Double" \
-"/cascade/motor_throttle/bli@std_msgs/msg/Float64]gz.msgs.Double" \
-"/cascade/motor_throttle/bri@std_msgs/msg/Float64]gz.msgs.Double" \
-"/cascade/motor_throttle/flo@std_msgs/msg/Float64]gz.msgs.Double" \
-"/cascade/motor_throttle/fro@std_msgs/msg/Float64]gz.msgs.Double" \
-"/cascade/motor_throttle/blo@std_msgs/msg/Float64]gz.msgs.Double" \
-"/cascade/motor_throttle/bro@std_msgs/msg/Float64]gz.msgs.Double" \
-"/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry"
-
-Terminal 4:
-conda activate ros_env
-ros2 topic pub /cascade/motor_throttle/fli std_msgs/msg/Float64 "data: 10.0"
+## Terminal 2:
+  conda activate ros_env
+  gz sim -g
+  
+## Terminal 3:
+  conda activate ros_env
+  source "$CONDA_PREFIX/setup.sh"
+  source /ros2_ws/install/setup.sh
+  ros2 run ros_gz_bridge parameter_bridge \
+  "/cascade/motor_throttle/fli@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/cascade/motor_throttle/fri@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/cascade/motor_throttle/bli@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/cascade/motor_throttle/bri@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/cascade/motor_throttle/flo@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/cascade/motor_throttle/fro@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/cascade/motor_throttle/blo@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/cascade/motor_throttle/bro@std_msgs/msg/Float64]gz.msgs.Double" \
+  "/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry"
+  
+## Terminal 4:
+  conda activate ros_env
+  ros2 topic pub /cascade/motor_throttle/fli std_msgs/msg/Float64 "data: 10.0"
