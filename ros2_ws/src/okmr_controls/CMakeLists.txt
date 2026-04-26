@@ -111,6 +111,16 @@ ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(rclcpp geometry_msgs okmr_msgs)
 
 #install python execs
+install(PROGRAMS
+  okmr_controls/motor_thrust_test.py
+  okmr_controls/pose_test.py
+  okmr_controls/velocity_test.py
+  okmr_controls/accel_test.py
+  okmr_controls/enable_and_control.py
+  okmr_controls/goal_velocity_test.py
+  okmr_controls/wrench_test.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 #install launch and params
 
 install(DIRECTORY

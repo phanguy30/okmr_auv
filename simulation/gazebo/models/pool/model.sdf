@@ -21,7 +21,7 @@
         <visual name="pool">
             <geometry>
                <mesh>
-                  <uri>/home/eryk/Desktop/Cascade/simulation/models/pool.dae</uri>
+                  <uri>model://pool/pool.dae</uri>
                </mesh>
             </geometry>
         </visual>

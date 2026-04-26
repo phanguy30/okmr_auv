@@ -106,11 +106,11 @@
     </model>
     <include>
         <pose>0 0 -1 0 0 0</pose>
-        <uri> /home/eryk/Desktop/Cascade-AUV/simulation/models/pool.sdf </uri>
+        <uri>model://pool</uri>
     </include>
     <include>
         <pose>6 0 -1 0 0 0</pose>
-        <uri> /home/eryk/Desktop/Cascade-AUV/simulation/models/gate.sdf </uri>
+        <uri>model://gate</uri>
     </include>
     <include>
       <pose>0 0 0 0 0 0</pose>
@@ -123,7 +123,7 @@
         <publish_model_pose>true</publish_model_pose>
         <publish_nested_model_pose>true</publish_nested_model_pose>
       </plugin>
-      <uri> /home/eryk/Desktop/Cascade-AUV/simulation/models/cascade.sdf </uri>
+      <uri>model://cascade</uri>
     
       <plugin
         filename="ignition-gazebo-thruster-system"
